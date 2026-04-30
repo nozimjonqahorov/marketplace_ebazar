@@ -1,0 +1,110 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    /* Markazlashtirilgan konteyner */
+    .form-wrapper {
+        max-width: 500px;
+        margin: 40px auto;
+        padding: 30px;
+        background: #ffffff;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .form-wrapper h2 {
+        text-align: center;
+        color: #2c3e50;
+        margin-bottom: 30px;
+    }
+
+    /* Input va label dizayni */
+    .field-container {
+        margin-bottom: 20px;
+    }
+
+    .field-container label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #34495e;
+    }
+
+    .field-container input {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #ecf0f1;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+    }
+
+    .field-container input:focus {
+        border-color: #3498db;
+        outline: none;
+        box-shadow: 0 0 8px rgba(52, 152, 219, 0.2);
+    }
+
+    /* Tugmalar */
+    .btn-submit {
+        width: 100%;
+        padding: 14px;
+        background: #27ae60;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .btn-submit:hover {
+        background: #219150;
+    }
+
+    .back-link {
+        display: block;
+        text-align: center;
+        margin-top: 15px;
+        color: #7f8c8d;
+        text-decoration: none;
+    }
+
+    /* Xatoliklar uchun */
+    .error-list {
+        color: #e74c3c;
+        font-size: 13px;
+        margin-top: 5px;
+        padding-left: 0;
+        list-style: none;
+    }
+</style>
+
+<div class="form-wrapper">
+    <h2>Profilni tahrirlash</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        {% for field in form %}
+            <div class="field-container">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                
+                {% if field.errors %}
+                    <ul class="error-list">
+                        {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <button type="submit" class="btn-submit">O'zgarishlarni saqlash</button>
+        <a href="{% url 'profile' %}" class="back-link">← Orqaga qaytish</a>
+    </form>
+</div>
+{% endblock %}

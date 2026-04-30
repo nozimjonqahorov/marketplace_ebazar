@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}E-Bazar{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar { background-color: #fff; border-bottom: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .footer { margin-top: 50px; color: #888; font-size: 14px; text-align: center; padding: 30px; background: #fff; border-top: 1px solid #eee; }
+        .nav-link:hover { color: #198754 !important; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-success" href="{% url 'home' %}">E-Bazar</a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <!-- Kategoriyalar Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="catDrop" role="button" data-bs-toggle="dropdown">
+                            Kategoriyalar
+                        </a>
+                        <ul class="dropdown-menu">
+                            {% for category in categories %}
+                                <li><a class="dropdown-item" href="{% url 'category' category.name %}">{{ category.name }}</a></li>
+                            {% empty %}
+                                <li><a class="dropdown-item disabled">Kategoriyalar yo'q</a></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    
+                    <li class="nav-item"><a class="nav-link" href="#"><i class="fa-solid fa-plus-circle me-1"></i>E'lon berish</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#"><i class="fa-solid fa-heart me-1"></i>Saqlanganlar</a></li>
+                </ul>
+
+                <!-- Qidiruv -->
+                <form class="d-flex me-3" action="#" method="GET">
+                    <input class="form-control me-1" type="search" name="q" placeholder="Qidirish..." aria-label="Search">
+                    <button class="btn btn-outline-success" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </form>
+
+                <!-- Foydalanuvchi qismi (Login/Logout/Profil) -->
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fa-solid fa-circle-user fs-4 me-1 text-secondary"></i>
+                                <span>{{ user.username }}</span>
+                            </a>
+zww                            <li>
+                                <a class="dropdown-item" href="{% url 'profile' user.username %}">
+                                    <i class="fa-solid fa-user me-2"></i>Profilim
+                                </a>
+                            </li>                                <li><a class="dropdown-item" href="{% url 'profile-update' %}"><i class="fa-solid fa-user-gear me-2"></i>Sozlamalar</a></li>
+                                <li><a class="dropdown-item" href="{% url 'change-password' %}"><i class="fa-solid fa-key me-2"></i>Parolni o'zgartirish</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fa-solid fa-right-from-bracket me-2"></i>Chiqish</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">Kirish</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-success rounded-pill px-4 ms-lg-2" href="{% url 'signup' %}">Ro'yxatdan o'tish</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container my-4">
+        <!-- Message-lar (Xabarlar) uchun joy (Masalan: "Muvaffaqiyatli kirdingiz") -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <div class="footer">
+        <p class="mb-0">&copy; 2026 E-Bazar Jamoasi. Barcha huquqlar himoyalangan.</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    
+    <h3 class="mb-4 fw-bold">Recently Products</h3>
+  
+    <div class="row g-4">
+        {% for product in products %}
+            <div class="col-md-4 col-sm-6">
+                <div class="card h-100 border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                    <div style="height: 200px; background: #fdfdfd; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: center;">
+                        {% if product.productimage_set.exists %}
+                            <img src="{{ product.productimage_set.all.first.image.url }}" class="card-img-top" alt="{{ product.title }}" style="object-fit: contain; height: 100%;">
+                        {% else %}
+                            <i class="fa-regular fa-image fa-3x text-light"></i>
+                        {% endif %}
+                    </div>
+
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold text-truncate">{{ product.title }}</h5>
+                        <p class="card-text text-success fw-bold fs-5 mb-1">${{ product.price }}</p>
+                        
+                        <div class="small text-muted mb-3">
+                            <div class="mb-1"><i class="fa-solid fa-folder-open me-1"></i> {{ product.category.name }}</div>
+                            <div class="mb-1"><i class="fa-solid fa-user me-1"></i> {{ product.author.username }}</div>
+                            <div><i class="fa-solid fa-location-dot me-1"></i> {{ product.address }}</div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <a href="#" class="text-dark"><i class="fa-regular fa-bookmark fs-5"></i></a>
+                            <a href="#" class="btn btn-outline-info btn-sm px-4">Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center py-5">
+                <div class="text-muted">
+                    <i class="fa-solid fa-box-open fa-4x mb-3"></i>
+                    <p class="fs-5">Hozircha mahsulotlar mavjud emas</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
