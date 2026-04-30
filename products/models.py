@@ -63,7 +63,7 @@ class Comment(models.Model):
     date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f" Commment author: {self.author.username}"
+        return f" Commment avtor: {self.author.username}"
 
 
 
