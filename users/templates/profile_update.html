@@ -104,7 +104,7 @@
         {% endfor %}
 
         <button type="submit" class="btn-submit">O'zgarishlarni saqlash</button>
-        <a href="{% url 'profile' %}" class="back-link">← Orqaga qaytish</a>
+        <a href="{% url 'profile' user.username %}" class="back-link">← Orqaga qaytish</a>
     </form>
 </div>
 {% endblock %}

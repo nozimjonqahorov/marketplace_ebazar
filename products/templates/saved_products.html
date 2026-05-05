@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Saqlanganlar - E-Bazar{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-dark"><i class="fa-solid fa-bookmark text-primary me-2"></i>Saqlangan e'lonlar</h3>
+        <span class="badge bg-primary p-2 px-3 rounded-pill">{{ saved_products|length }} ta mahsulot</span>
+    </div>
+
+    <div class="row g-4" id="saved-items-container">
+        {% for item in saved_products %}
+            <!-- Har bir kartochka uchun maxsus ID beramiz, o'chirish oson bo'lishi uchun -->
+            <div class="col-lg-3 col-md-4 col-sm-6" id="saved-card-{{ item.product.pk }}">
+                <div class="card h-100 border-0 shadow-sm product-card">
+                    <div class="image-box position-relative">
+                        <!-- O'chirish tugmasi -->
+                        <div class="favorite-action" style="position: absolute; top: 10px; right: 10px; z-index: 10;">
+                            <button class="btn btn-danger shadow-sm rounded-circle remove-btn" 
+                                    data-url="{% url 'save_product' item.product.pk %}" 
+                                    data-id="{{ item.product.pk }}" 
+                                    style="...">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+
+                        <a href="{% url 'product_detail' item.product.pk %}">
+                            {% with item.product.productimage_set.first as img %}
+                                <img src="{% if img %}{{ img.image.url }}{% else %}/static/no-image.png{% endif %}" 
+                                     class="card-img-top" alt="{{ item.product.title }}">
+                            {% endwith %}
+                        </a>
+                    </div>
+
+                    <div class="card-body p-3">
+                        <h6 class="fw-bold text-truncate">
+                            <a href="{% url 'product_detail' item.product.pk %}" class="text-dark text-decoration-none">
+                                {{ item.product.title }}
+                            </a>
+                        </h6>
+                        <p class="text-success fw-bold mb-1">{{ item.product.price }} so'm</p>
+                        <p class="text-muted small"><i class="fa-solid fa-location-dot me-1"></i> {{ item.product.address|truncatechars:20 }}</p>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="fa-regular fa-folder-open fa-4x text-light mb-3"></i>
+                <h4 class="text-muted">Saqlangan mahsulotlar topilmadi</h4>
+                <a href="{% url 'all_products' %}" class="btn btn-primary rounded-pill mt-3 px-4">Xaridni boshlash</a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .product-card { border-radius: 15px; transition: 0.3s; }
+    .image-box { height: 160px; overflow: hidden; border-radius: 15px 15px 0 0; background: #f8f9fa; }
+    .image-box img { width: 100%; height: 100%; object-fit: cover; }
+    /* O'chish effekti uchun */
+    .fade-out { opacity: 0; transform: scale(0.9); transition: 0.4s ease; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const removeButtons = document.querySelectorAll('.remove-btn');
+
+    removeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = this.getAttribute('data-id');
+            const url = this.getAttribute('data-url'); // Atributdan URLni olamiz
+
+            // Siz yozgan ToggleSavedView'ga so'rov yuboramiz
+            fetch(url, {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'removed') {
+                    const card = document.getElementById(`saved-card-${productId}`);
+                    // Animatsiya bilan o'chirish
+                    card.classList.add('fade-out');
+                    setTimeout(() => {
+                        card.remove();
+                        // Agar hamma mahsulot o'chib ketsa, xabarni yangilaymiz
+                        const container = document.getElementById('saved-items-container');
+                        if (container.children.length === 0) {
+                            location.reload(); 
+                        }
+                    }, 400);
+                }
+            })
+            .catch(err => console.error('Xatolik:', err));
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.title }} ni Tahrirlash - E-Bazar{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-9"> 
+            <div class="card border-0 shadow-lg" style="border-radius: 15px; overflow: hidden;">
+                <!-- Header -->
+                <div class="card-header bg-warning py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-pen-to-square me-2"></i>Mahsulotni tahrirlash</h4>
+                        <span class="badge {% if product.is_active %}bg-success{% else %}bg-danger{% endif %} p-2">
+                            {% if product.is_active %}Sotuvda faol{% else %}Nofaol / Tugagan{% endif %}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-body p-4 bg-white">
+                    {% if form.errors or formset.errors %}
+                        <div class="alert alert-danger border-0 shadow-sm">
+                            <i class="fa-solid fa-triangle-exclamation me-2"></i> Iltimos, xatoliklarni tekshiring!
+                        </div>
+                    {% endif %}
+
+                    <form method="POST" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- ASOSIY MA'LUMOTLAR -->
+                        <div class="row g-3">
+                            <div class="col-md-8 mb-3">
+                                <label class="form-label fw-bold"><i class="fa-solid fa-heading me-1 text-warning"></i>Mahsulot Nomi</label>
+                                {{ form.title }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold"><i class="fa-solid fa-folder-open me-1 text-warning"></i>Kategoriya</label>
+                                {{ form.category }}
+                            </div>
+                        </div>
+
+                        <!-- NARX VA MIQDOR -->
+                        <div class="row g-3">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold"><i class="fa-solid fa-money-bill-wave me-1 text-success"></i>Narxi (so'm)</label>
+                                {{ form.price }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold"><i class="fa-solid fa-cubes me-1 text-info"></i>Miqdori (Zaxira)</label>
+                                {{ form.quantity }}
+                                {% if product.quantity == 0 %}
+                                    <small class="text-danger fw-bold"><i class="fa-solid fa-circle-exclamation"></i> Zaxira tugagan!</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold"><i class="fa-solid fa-star me-1 text-primary"></i>Holati (Condition)</label>
+                                {{ form.condition }}
+                            </div>
+                        </div>
+
+                        <!-- MANZIL VA STATUS -->
+                        <div class="row g-3 align-items-center">
+                            <div class="col-md-8 mb-3">
+                                <label class="form-label fw-bold"><i class="fa-solid fa-location-dot me-1 text-danger"></i>Manzil</label>
+                                {{ form.address }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="form-check form-switch mt-4 p-3 border rounded bg-light">
+                                    {{ form.is_active }}
+                                    <label class="form-check-label fw-bold ms-2" for="{{ form.is_active.id_for_label }}">
+                                        Sotuvda ko'rinsinmi?
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold"><i class="fa-solid fa-align-left me-1 text-warning"></i>Tafsilotlar</label>
+                            {{ form.description }}
+                        </div>
+
+                        <hr class="my-4 border-warning opacity-25">
+
+                        <!-- RASMLAR BO'LIMI -->
+                        <h5 class="mb-4 text-dark fw-bold"><i class="fa-solid fa-images me-2 text-warning"></i>Mahsulot rasmlari</h5>
+                        {{ formset.management_form }}
+
+                        <div class="row g-3">
+                            {% for image_form in formset %}
+                                <div class="col-md-4">
+                                    <div class="image-upload-card border rounded p-3 text-center h-100 bg-light">
+                                        {% if image_form.instance.image %}
+                                            <div class="position-relative mb-3">
+                                                <img src="{{ image_form.instance.image.url }}" class="rounded shadow-sm" style="height: 120px; width: 100%; object-fit: cover;">
+                                                {% if image_form.instance.pk %}
+                                                <div class="mt-2 text-danger small bg-white rounded p-1 border">
+                                                    {{ image_form.DELETE }} <label class="ms-1" for="{{ image_form.DELETE.id_for_label }}">O'chirish</label>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        {% else %}
+                                            <div class="py-4 border border-dashed rounded text-muted mb-2">
+                                                <i class="fa-solid fa-cloud-arrow-up fa-2x"></i><br>
+                                                <small>Yangi rasm</small>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <div class="small-file-input">
+                                            {{ image_form.image }}
+                                            {{ image_form.id }}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- TUGMALAR -->
+                        <div class="d-flex gap-3 justify-content-end mt-5 border-top pt-4">
+                            <a href="{% url 'seller_dashboard' %}" class="btn btn-light px-4 border">
+                                <i class="fa-solid fa-arrow-left me-2"></i>Dashboardga qaytish
+                            </a>
+                            <button type="submit" class="btn btn-warning px-5 fw-bold shadow-sm">
+                                <i class="fa-solid fa-check-double me-2"></i>O'zgarishlarni saqlash
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Form elementlari uchun chiroyli ko'rinish */
+    input[type="text"], input[type="number"], select, textarea {
+        display: block;
+        width: 100%;
+        border-radius: 10px !important;
+        border: 1.5px solid #eee !important;
+        padding: 10px 15px !important;
+        transition: all 0.3s ease;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+        border-color: #ffc107 !important;
+        box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.15) !important;
+        outline: none;
+    }
+
+    .form-switch .form-check-input {
+        width: 3em !important;
+        height: 1.5em !important;
+        cursor: pointer;
+    }
+
+    .image-upload-card {
+        transition: transform 0.2s;
+        border: 2px dashed #ddd !important;
+    }
+
+    .image-upload-card:hover {
+        transform: translateY(-5px);
+        border-color: #ffc107 !important;
+    }
+
+    .small-file-input input[type="file"] {
+        font-size: 11px !important;
+        padding: 5px !important;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h3 class="fw-bold mb-4">Yangi karta qo'shish</h3>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Karta nomi (Masalan: Uzcard, Visa)</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors }}</div>{% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Karta raqami (16 talik)</label>
+                        {{ form.card_number }}
+                        {% if form.card_number.errors %}<div class="text-danger small">{{ form.card_number.errors }}</div>{% endif %}
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold">Boshlang'ich balans</label>
+                        {{ form.balance }}
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold">Asosiy kartami</label>
+                        {{ form.is_primary }}
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary rounded-pill py-2 fw-bold">Saqlash</button>
+                        <a href="{% url 'cards-list' %}" class="btn btn-light rounded-pill py-2">Bekor qilish</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

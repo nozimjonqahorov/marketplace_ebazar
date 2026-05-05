@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Statistika: Xaridor uchun -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4" style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); color: white;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="opacity-75 d-block">Umumiy buyurtmalar</small>
+                        <h2 class="fw-bold mb-0">{{ total_orders }} ta</h2>
+                    </div>
+                    <i class="fa-solid fa-cart-shopping fa-3x opacity-25"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="opacity-75 d-block">Turli mahsulotlar</small>
+                        <h2 class="fw-bold mb-0">{{ total_products }} ta</h2>
+                    </div>
+                    <i class="fa-solid fa-box-open fa-3x opacity-25"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4" style="background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%); color: white;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="opacity-75 d-block">Jami xarajat</small>
+                        <h2 class="fw-bold mb-0">{{ total_expense|floatformat:0 }} so'm</h2>
+                    </div>
+                    <i class="fa-solid fa-wallet fa-3x opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Buyurtmalar Ro'yxati -->
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="card-header bg-white py-4 px-4 border-bottom">
+            <h4 class="fw-bold mb-0 text-dark">
+                <span class="badge bg-primary me-2">&nbsp;</span> Mening buyurtmalarim
+            </h4>
+        </div>
+        <div class="card-body p-0">
+            {% if orders %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4 py-3">Sotuvchi</th>
+                            <th class="py-3">Mahsulot tafsilotlari</th>
+                            <th class="py-3">Holat</th>
+                            <th class="py-3 text-center">Amallar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm bg-light rounded-circle p-2 me-3 text-center" style="width: 40px;">
+                                        <i class="fa-solid fa-store text-muted"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">{{ order.seller.username }}</div>
+                                        <div class="small text-muted">ID: #{{ order.id }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="fw-semibold">{{ order.product.title }}</div>
+                                <div class="small text-primary">{{ order.total_price|floatformat:0 }} so'm × {{ order.quantity }}</div>
+                            </td>
+                            <td>
+                                {% if order.status == 'new' %}
+                                    <span class="badge bg-warning text-dark border border-warning rounded-pill px-3">Kutilmoqda</span>
+                                {% elif order.status == 'accepted' %}
+                                    <span class="badge bg-info text-white border border-info rounded-pill px-3">Yetkazilmoqda</span>
+                                {% elif order.status == 'completed' %}
+                                    <span class="badge bg-success text-white border border-success rounded-pill px-3">Tamamlandi</span>
+                                {% else %}
+                                    <span class="badge bg-danger text-white border border-danger rounded-pill px-3">Bekor qilindi</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if order.status == 'new' or order.status == 'accepted' %}
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{% url 'order_detail' order.id %}" class="btn btn-outline-primary rounded-start-3">
+                                            <i class="fa-solid fa-eye me-1"></i> Ko'rish
+                                        </a>
+                                        <form action="{% url 'cancel_order' order.id %}" method="post" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit"
+                                                    class="btn btn-outline-danger rounded-end-3"
+                                                    onclick="return confirm('Buyurtmani bekor qilmoqchimisiz? Pul hisobingizga qaytariladi.')">
+                                                <i class="fa-solid fa-times me-1"></i> Bekor
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% else %}
+                                    <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-secondary rounded-pill">
+                                        <i class="fa-solid fa-eye me-1"></i> Ko'rish
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="fa-solid fa-box-open fa-3x mb-3 d-block opacity-25"></i>
+                                    Hozircha buyurtmalar yo'q.
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <div class="text-muted">
+                    <i class="fa-solid fa-inbox fa-3x mb-3 d-block opacity-25"></i>
+                    <p>Hozircha buyurtmalar yo'q.</p>
+                    <a href="{% url 'all_products' %}" class="btn btn-sm btn-primary rounded-pill mt-3">
+                        <i class="fa-solid fa-shopping-bag me-1"></i> Xarid qilishni boshlash
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Statuslar uchun yumshoq fonlar */
+    .bg-warning-soft { background-color: #fff3cd !important; }
+    .bg-primary-soft { background-color: #cfe2ff !important; }
+    .bg-success-soft { background-color: #d1e7dd !important; }
+    .bg-danger-soft { background-color: #f8d7da !important; }
+    
+    .table thead th {
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .card { transition: all 0.3s ease; }
+</style>
+{% endblock %}

@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Professional Katalog{% endblock %}
+
+{% block content %}
+<style>
+    /* 1. Asosiy konteyner va rasm o'lchami */
+    .product-card {
+        border-radius: 12px;
+        background: #fff;
+        transition: transform 0.2s;
+        border: 1px solid #eee !important;
+        position: relative;
+    }
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08) !important;
+    }
+
+    .image-container {
+        position: relative;
+        width: 100%;
+        height: 220px; /* Aniq balandlik beramiz */
+        background: #fdfdfd;
+        border-radius: 12px 12px 0 0;
+        overflow: hidden;
+    }
+
+    .card-img-fixed {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+    }
+
+    /* 2. Bookmark tugmasi - Mutloq yuqorida turishi shart */
+    .bookmark-wrapper {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 100; /* Hammadan ustun turadi */
+    }
+
+    .save-btn {
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    /* 3. Narx - Rasm ustida */
+    .price-tag {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        background: rgba(13, 110, 253, 0.9);
+        color: white;
+        padding: 3px 10px;
+        border-radius: 6px;
+        font-weight: bold;
+        z-index: 90;
+    }
+
+    /* 4. View count badge */
+    .view-badge {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        z-index: 90;
+    }
+
+    /* Carousel boshqaruvi */
+    .carousel, .carousel-inner, .carousel-item {
+        height: 100%;
+    }
+    .carousel-control-prev, .carousel-control-next {
+        width: 15%;
+        z-index: 95;
+    }
+</style>
+
+<div class="container mt-4 mb-5">
+    
+    <!-- 🧭 Filtrlar (Soddaroq va xavfsiz) -->
+    <!-- 🧭 Filtrlar -->
+    <div class="card border-0 shadow-sm p-3 mb-4 rounded-4">
+        <form method="get" class="row g-2">
+            <div class="col-md-3">
+                <select name="category" class="form-select bg-light border-0">
+                    <option value="">Barcha kategoriyalar</option>
+                    {% for cat in categories %}
+                        <!-- request.GET.category bilan cat.id ni solishtiramiz -->
+                        <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"i" %}selected{% endif %}>
+                            {{ cat.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="number" name="min_price" value="{{ request.GET.min_price }}" class="form-control bg-light border-0" placeholder="Min narx">
+            </div>
+            <div class="col-md-2">
+                <input type="number" name="max_price" value="{{ request.GET.max_price }}" class="form-control bg-light border-0" placeholder="Max narx">
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="q" value="{{ request.GET.q }}" class="form-control bg-light border-0" placeholder="Qidiruv...">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100 rounded-3">Filtrlash</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 🛍️ Mahsulotlar -->
+    <div class="row g-3">
+        {% for product in products %}
+        <div class="col-xl-3 col-lg-4 col-md-6 col-6">
+            <div class="product-card card h-100">
+                
+                <!-- Rasm qismi -->
+                <div class="image-container">
+                    <!-- Bookmark (Carousel ichida emas, ustida) -->
+                    {% if request.user.is_authenticated %}
+                        <div class="bookmark-wrapper">
+                            <button class="save-btn" data-url="{% url 'save_product' product.pk %}" data-id="{{ product.pk }}">
+                                <i class="fa-bookmark {% if product.pk in saved_ids %}fa-solid text-primary{% else %}fa-regular{% endif %}" 
+                                   id="bookmark-{{ product.pk }}"></i>
+                            </button>
+                        </div>
+                    {% endif %}
+
+                    <!-- Narx -->
+                    <div class="price-tag small">
+                        {{ product.price }} so'm
+                    </div>
+
+                    <!-- View count badge -->
+                    <div class="view-badge">
+                        <i class="fa-solid fa-eye me-1"></i>{{ product.product_views.count }}
+                    </div>
+
+                    <!-- Carousel wrapped with link -->
+                    <a href="{% url 'product_detail' product.pk %}" class="text-decoration-none">
+                        <div id="carousel-{{ product.pk }}" class="carousel slide" data-bs-ride="false">
+                            <div class="carousel-inner">
+                                {% for img in product.productimage_set.all %}
+                                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                    <img src="{{ img.image.url }}" class="card-img-fixed" alt="...">
+                                </div>
+                                {% empty %}
+                                <div class="carousel-item active">
+                                    <img src="/static/no-image.png" class="card-img-fixed" alt="...">
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% if product.productimage_set.count > 1 %}
+                            <button class="carousel-control-prev" type="button" data-bs-target="#carousel-{{ product.pk }}" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#carousel-{{ product.pk }}" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Matn qismi -->
+                <a href="{% url 'product_detail' product.pk %}" class="text-decoration-none text-dark">
+                    <div class="card-body p-2">
+                        <p class="fw-bold mb-1 text-truncate" style="font-size: 0.9rem;">{{ product.title }}</p>
+                        <p class="text-muted small mb-0"><i class="fa-location-dot me-1"></i>{{ product.address|truncatechars:15 }}</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- 📄 Pagination -->
+    {% if products.has_other_pages %}
+    <div class="d-flex justify-content-center mt-5">
+        <nav aria-label="Sahifalar">
+            <ul class="pagination">
+                {% if products.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ products.previous_page_number }}{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val }}{% endif %}{% endfor %}" aria-label="Previous">
+                            &laquo;
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% for i in products.paginator.page_range %}
+                    {% if i == products.number %}
+                        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ i }}{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val }}{% endif %}{% endfor %}">
+                                {{ i }}
+                            </a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if products.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ products.next_page_number }}{% for key, val in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ val }}{% endif %}{% endfor %}" aria-label="Next">
+                            &raquo;
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+    document.querySelectorAll('.save-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const id = this.dataset.id;
+            const url = this.dataset.url;
+            const icon = document.getElementById(`bookmark-${id}`);
+
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'login_required') {
+                    if (data.login_url) window.location.href = data.login_url;
+                    return;
+                }
+
+                if (data.status === 'added') {
+                    icon.classList.replace('fa-regular', 'fa-solid');
+                    icon.classList.add('text-primary');
+                } else {
+                    icon.classList.replace('fa-solid', 'fa-regular');
+                    icon.classList.remove('text-primary');
+                }
+            }).catch(err => console.log(err));
+        });
+    });
+</script>
+{% endblock %}

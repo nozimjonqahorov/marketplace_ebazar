@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="card border-0 shadow rounded-4 p-5 mb-4 bg-dark text-white">
+                <i class="fa-solid fa-shield-halved fa-3x mb-3 text-info"></i>
+                <h5 class="opacity-75 mb-1">{{ card.name }}</h5>
+                <h1 class="fw-bold mb-4">{{ card.balance }} so'm</h1>
+                <p class="font-monospace h4 mb-0">{{ card.card_number }}</p>
+            </div>
+
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{% url 'card-update' card.pk %}" class="btn btn-warning rounded-pill px-4 fw-bold">
+                    <i class="fa-solid fa-pen me-1"></i> Tahrirlash
+                </a>
+                <a href="{% url 'card-delete' card.pk %}" class="btn btn-danger rounded-pill px-4 fw-bold">
+                    <i class="fa-solid fa-trash me-1"></i> O'chirish
+                </a>
+                <a href="{% url 'cards-list' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                    <i class="fa-solid fa-arrow-left"></i> Qaytish
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

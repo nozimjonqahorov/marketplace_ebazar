@@ -1,0 +1,388 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Xatolar va xabarlar -->
+            {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                        <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+                            <i class="fa-solid fa-{% if message.tags == 'error' %}circle-exclamation{% elif message.tags == 'warning' %}triangle-exclamation{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %} me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Sarlavha -->
+            <div class="mb-4">
+                <h2 class="fw-bold text-dark">
+                    <i class="fa-solid fa-receipt text-primary me-2"></i>Buyurtma #{{ order.id }}
+                </h2>
+                <p class="text-muted small">{{ order.created_at|date:"d.m.Y H:i" }}</p>
+            </div>
+
+            <!-- Buyurtma Statusi (Yuqorida) -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap">
+                            <div>
+                                <small class="opacity-75 d-block">Buyurtma Holati</small>
+                                <h3 class="fw-bold mb-0">
+                                    {% if order.status == 'new' %}
+                                        <i class="fa-solid fa-hourglass-start me-2"></i>Kutilmoqda
+                                    {% elif order.status == 'accepted' %}
+                                        <i class="fa-solid fa-truck me-2"></i>Yetkazilmoqda
+                                    {% elif order.status == 'completed' %}
+                                        <i class="fa-solid fa-check-circle me-2"></i>Tamamlandi
+                                    {% else %}
+                                        <i class="fa-solid fa-ban me-2"></i>Bekor qilindi
+                                    {% endif %}
+                                </h3>
+                            </div>
+                            <div class="text-end">
+                                <small class="opacity-75 d-block">Jami Summa</small>
+                                <h3 class="fw-bold mb-0">{{ order.total_price|floatformat:0 }} so'm</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mahsulot Tafsilotlari -->
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-4">
+                <div class="card-header bg-white py-4 px-4 border-bottom">
+                    <h5 class="fw-bold mb-0 text-dark">
+                        <i class="fa-solid fa-box me-2 text-primary"></i>Mahsulot Tafsilotlari
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <!-- Mahsulot Rasmi -->
+                        <div class="col-md-4">
+                            <div class="bg-light rounded-4 d-flex align-items-center justify-content-center" style="height: 300px;">
+                                {% if order.product.image %}
+                                    <img src="{{ order.product.image.url }}" alt="{{ order.product.title }}" class="img-fluid rounded" style="max-height: 280px; object-fit: contain;">
+                                {% else %}
+                                    <div class="text-center text-muted">
+                                        <i class="fa-solid fa-image" style="font-size: 3rem;"></i>
+                                        <p class="mt-2">Rasm yo'q</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Mahsulot Ma'lumotlari -->
+                        <div class="col-md-8">
+                            <div class="mb-4">
+                                <h4 class="fw-bold text-dark mb-3">{{ order.product.title }}</h4>
+                                <div class="row g-4">
+                                    <div class="col-sm-6">
+                                        <p class="text-muted small mb-1">Birlik Narxi</p>
+                                        <p class="fw-bold h5">{{ order.product.price }} so'm</p>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <p class="text-muted small mb-1">Miqdor</p>
+                                        <p class="fw-bold h5">{{ order.quantity }} ta</p>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <p class="text-muted small mb-1">Jami Narxi</p>
+                                        <p class="fw-bold h5 text-primary">{{ order.total_price|floatformat:0 }} so'm</p>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <p class="text-muted small mb-1">Sifati</p>
+                                        <p class="fw-bold h5">
+                                            {% if order.product.condition == 'new' %}
+                                                <span class="badge bg-success">Yangi</span>
+                                            {% elif order.product.condition == 'like_new' %}
+                                                <span class="badge bg-info">Yangi kabi</span>
+                                            {% elif order.product.condition == 'good' %}
+                                                <span class="badge bg-primary">Yaxshi</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">Tamirlangan</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% if order.message %}
+                            <div class="alert alert-info rounded-3 py-3 small">
+                                <i class="fa-solid fa-comment me-2"></i>
+                                <strong>Xaridor izohiy:</strong><br>
+                                {{ order.message }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Xaridor va Sotuvchi Ma'lumotlari -->
+            <div class="row g-4 mb-4">
+                <!-- XARIDOR MA'LUMOTLARI -->
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                        <div class="card-header bg-light py-3 px-4 border-bottom">
+                            <h6 class="fw-bold mb-0">
+                                <i class="fa-solid fa-user-shopping me-2 text-primary"></i>Xaridor Ma'lumotlari
+                            </h6>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="bg-light rounded-circle p-3 me-3 text-center" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fa-solid fa-user text-muted" style="font-size: 1.5rem;"></i>
+                                </div>
+                                <div>
+                                    <p class="fw-bold mb-0">{{ order.buyer.username }}</p>
+                                    <p class="text-muted small mb-0">{{ order.buyer.email }}</p>
+                                </div>
+                            </div>
+
+                            {% if order.buyer.phone %}
+                            <p class="mb-3">
+                                <i class="fa-solid fa-phone text-muted me-2"></i>
+                                <span class="text-muted">{{ order.buyer.phone }}</span>
+                            </p>
+                            {% endif %}
+
+                            {% if order.buyer.address %}
+                            <p class="mb-3">
+                                <i class="fa-solid fa-map-location-dot text-muted me-2"></i>
+                                <span class="text-muted">{{ order.buyer.address }}</span>
+                            </p>
+                            {% endif %}
+
+                            <div class="mt-4 pt-3 border-top">
+                                <a href="{% url 'profile' order.buyer.username %}" class="btn btn-sm btn-outline-primary rounded-pill" target="_blank">
+                                    <i class="fa-solid fa-eye me-1"></i> Profilni ko'rish
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SOTUVCHI MA'LUMOTLARI -->
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                        <div class="card-header bg-light py-3 px-4 border-bottom">
+                            <h6 class="fw-bold mb-0">
+                                <i class="fa-solid fa-store me-2 text-success"></i>Sotuvchi Ma'lumotlari
+                            </h6>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="bg-light rounded-circle p-3 me-3 text-center" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fa-solid fa-shop text-muted" style="font-size: 1.5rem;"></i>
+                                </div>
+                                <div>
+                                    <p class="fw-bold mb-0">{{ order.seller.username }}</p>
+                                    <p class="text-muted small mb-0">{{ order.seller.email }}</p>
+                                </div>
+                            </div>
+
+                            {% if order.seller.phone %}
+                            <p class="mb-3">
+                                <i class="fa-solid fa-phone text-muted me-2"></i>
+                                <span class="text-muted">{{ order.seller.phone }}</span>
+                            </p>
+                            {% endif %}
+
+                            {% if order.seller.address %}
+                            <p class="mb-3">
+                                <i class="fa-solid fa-map-location-dot text-muted me-2"></i>
+                                <span class="text-muted">{{ order.seller.address }}</span>
+                            </p>
+                            {% endif %}
+
+                            <div class="mt-4 pt-3 border-top">
+                                <a href="{% url 'profile' order.seller.id %}" class="btn btn-sm btn-outline-success rounded-pill" target="_blank">
+                                    <i class="fa-solid fa-eye me-1"></i> Profilni ko'rish
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- XARIDOR AMALLAR -->
+            {% if request.user == order.buyer %}
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-4">
+                <div class="card-header bg-white py-4 px-4 border-bottom">
+                    <h5 class="fw-bold mb-0 text-dark">
+                        <i class="fa-solid fa-list me-2 text-info"></i>Xaridor Amallar
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        {% if order.status == 'new' or order.status == 'accepted' %}
+                        <div class="col-12">
+                            <form action="{% url 'cancel_order' order.id %}" method="post" class="d-inline-block w-100">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="btn btn-danger btn-lg w-100 rounded-3"
+                                        onclick="return confirm('Buyurtmani bekor qilmoqchimisiz? Pul hisobingizga qaytariladi.')">
+                                    <i class="fa-solid fa-times-circle me-2"></i> Buyurtmani Bekor Qilish
+                                </button>
+                            </form>
+                            <p class="text-muted small mt-2 mb-0">
+                                <i class="fa-solid fa-info-circle me-1"></i>
+                                Bekor qilish bilan {{ order.total_price|floatformat:0 }} so'm qaytariladi.
+                            </p>
+                        </div>
+                        {% elif order.status == 'completed' %}
+                        <div class="col-12">
+                            <div class="alert alert-success rounded-3 py-4">
+                                <i class="fa-solid fa-check-circle me-2" style="font-size: 1.5rem;"></i>
+                                <div class="d-inline-block">
+                                    <h6 class="fw-bold mb-1">Buyurtma Tamamlandi</h6>
+                                    <p class="text-muted small mb-0">Mahsulot muvaffaqiyatli yetkazildi.</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="col-12">
+                            <div class="alert alert-warning rounded-3 py-4">
+                                <i class="fa-solid fa-ban me-2" style="font-size: 1.5rem;"></i>
+                                <div class="d-inline-block">
+                                    <h6 class="fw-bold mb-1">Buyurtma Bekor Qilindi</h6>
+                                    <p class="text-muted small mb-0">Bu buyurtma bekor qilinga'n. Murojaat qilmang.</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- SOTUVCHI AMALLAR -->
+            {% if request.user == order.seller %}
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-4">
+                <div class="card-header bg-white py-4 px-4 border-bottom">
+                    <h5 class="fw-bold mb-0 text-dark">
+                        <i class="fa-solid fa-tasks me-2 text-success"></i>Sotuvchi Amallar
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        {% if order.status == 'new' %}
+                        <!-- Yangi buyurtma - Qabul qilish yoki Bekor qilish -->
+                        <div class="col-md-6">
+                            <form action="{% url 'accept_order' order.id %}" method="post" class="d-block w-100">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="btn btn-success btn-lg w-100 rounded-3">
+                                    <i class="fa-solid fa-check me-2"></i> Buyurtmani Qabul Qilish
+                                </button>
+                            </form>
+                            <p class="text-muted small mt-2 mb-0 text-center">
+                                <i class="fa-solid fa-info-circle me-1"></i>
+                                Buyurtmani qabul qiling va yetkazishni boshlang.
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <form action="{% url 'cancel_order' order.id %}" method="post" class="d-block w-100">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="btn btn-outline-danger btn-lg w-100 rounded-3"
+                                        onclick="return confirm('Buyurtmani bekor qilmoqchimisiz? Xaridorga pul qaytariladi.')">
+                                    <i class="fa-solid fa-times-circle me-2"></i> Bekor Qilish
+                                </button>
+                            </form>
+                        </div>
+
+                        {% elif order.status == 'accepted' %}
+                        <!-- Qabul qilingan - Yakunlash yoki Bekor qilish -->
+                        <div class="col-md-6">
+                            <form action="{% url 'complete_order' order.id %}" method="post" class="d-block w-100">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="btn btn-success btn-lg w-100 rounded-3">
+                                    <i class="fa-solid fa-flag-checkered me-2"></i> Buyurtmani Yakunlash
+                                </button>
+                            </form>
+                            <p class="text-muted small mt-2 mb-0 text-center">
+                                <i class="fa-solid fa-info-circle me-1"></i>
+                                Mahsulot yetkazilgandan so'ng bosing.
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <form action="{% url 'cancel_order' order.id %}" method="post" class="d-block w-100">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="btn btn-outline-danger btn-lg w-100 rounded-3"
+                                        onclick="return confirm('Buyurtmani bekor qilmoqchimisiz? Xaridorga pul qaytariladi.')">
+                                    <i class="fa-solid fa-times-circle me-2"></i> Bekor Qilish
+                                </button>
+                            </form>
+                        </div>
+
+                        {% elif order.status == 'completed' %}
+                        <!-- Tamamlandi - Faqat ma'lumot -->
+                        <div class="col-12">
+                            <div class="alert alert-success rounded-3 py-4">
+                                <i class="fa-solid fa-check-circle me-2" style="font-size: 1.5rem;"></i>
+                                <div class="d-inline-block">
+                                    <h6 class="fw-bold mb-1">Buyurtma Tamamlandi</h6>
+                                    <p class="text-muted small mb-0">{{ order.total_price|floatformat:0 }} so'm hisobingizga o'tdi.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% else %}
+                        <!-- Bekor qilindi -->
+                        <div class="col-12">
+                            <div class="alert alert-danger rounded-3 py-4">
+                                <i class="fa-solid fa-ban me-2" style="font-size: 1.5rem;"></i>
+                                <div class="d-inline-block">
+                                    <h6 class="fw-bold mb-1">Buyurtma Bekor Qilindi</h6>
+                                    <p class="text-muted small mb-0">Bu buyurtma bekor qilinga'n. Amal bajarib bo'lindi.</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Orqaga qaytish tugmasi -->
+            <div class="text-center">
+                {% if request.user == order.buyer %}
+                    <a href="{% url 'my_orders' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                        <i class="fa-solid fa-arrow-left me-2"></i> Buyurtmalarimga qaytish
+                    </a>
+                {% elif request.user == order.seller %}
+                    <a href="{% url 'seller_dashboard' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                        <i class="fa-solid fa-arrow-left me-2"></i> Bosh sahifaga qaytish
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table thead th {
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .card { 
+        transition: all 0.3s ease; 
+    }
+    .btn { 
+        transition: all 0.2s ease; 
+    }
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock %}

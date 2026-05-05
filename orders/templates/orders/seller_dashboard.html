@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Statistika: Endi qora emas, yumshoqroq ranglarda -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4" style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); color: white;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="opacity-75 d-block">Umumiy sotuvlar</small>
+                        <h2 class="fw-bold mb-0">{{ total_orders }} ta</h2>
+                    </div>
+                    <i class="fa-solid fa-cart-shopping fa-3x opacity-25"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="opacity-75 d-block">Mahsulotlar</small>
+                        <h2 class="fw-bold mb-0">{{ total_products }} ta</h2>
+                    </div>
+                    <i class="fa-solid fa-box-open fa-3x opacity-25"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4" style="background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%); color: white;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="opacity-75 d-block">Ko'rishlar</small>
+                        <h2 class="fw-bold mb-0">{{ total_views }} marta</h2>
+                    </div>
+                    <i class="fa-solid fa-chart-line fa-3x opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-4 offset-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4" style="background: linear-gradient(135deg, #ffcc00 0%, #ff7a18 100%); color: white;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="opacity-75 d-block">Jami daromad (completed)</small>
+                        <h2 class="fw-bold mb-0">{{ total_income|floatformat:0 }} so'm</h2>
+                    </div>
+                    <i class="fa-solid fa-wallet fa-3x opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Buyurtmalar Ro'yxati -->
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="card-header bg-white py-4 px-4 border-bottom">
+            <h4 class="fw-bold mb-0 text-dark">
+                <span class="badge bg-primary me-2">&nbsp;</span> Kelgan buyurtmalar
+            </h4>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4 py-3">Xaridor</th>
+                            <th class="py-3">Mahsulot tafsilotlari</th>
+                            <th class="py-3">Holat</th>
+                            <th class="py-3 text-center">Amallar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in my_orders %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm bg-light rounded-circle p-2 me-3 text-center" style="width: 40px;">
+                                        <i class="fa-solid fa-user text-muted"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">{{ order.buyer.username }}</div>
+                                        <div class="small text-muted">ID: #{{ order.id }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="fw-semibold">{{ order.product.title }}</div>
+                                <div class="small text-primary">{{ order.total_price|floatformat:0 }} so'm × {{ order.quantity }}</div>
+                            </td>
+                            <td>
+                                {% if order.status == 'new' %}
+                                    <span class="badge bg-warning-soft text-warning border border-warning rounded-pill px-3">Kutilmoqda</span>
+                                {% elif order.status == 'accepted' %}
+                                    <span class="badge bg-primary-soft text-primary border border-primary rounded-pill px-3">Qabul qilingan</span>
+                                {% elif order.status == 'completed' %}
+                                    <span class="badge bg-success-soft text-success border border-success rounded-pill px-3">Bajarildi</span>
+                                {% else %}
+                                    <span class="badge bg-danger-soft text-danger border border-danger rounded-pill px-3">Bekor qilingan</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if order.status == 'new' %}
+                                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                        <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-info rounded-pill px-3">
+                                            <i class="fa-solid fa-eye me-1"></i> Ko'rish
+                                        </a>
+                                        <form action="{% url 'accept_order' order.id %}" method="post">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-success rounded-pill px-3">
+                                                <i class="fa-solid fa-check me-1"></i> Qabul qilish
+                                            </button>
+                                        </form>
+                                        <form action="{% url 'cancel_order' order.id %}" method="post">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                                Bekor
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% elif order.status == 'accepted' %}
+                                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                        <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-info rounded-pill px-3">
+                                            <i class="fa-solid fa-eye me-1"></i> Ko'rish
+                                        </a>
+                                        <form action="{% url 'complete_order' order.id %}" method="post">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-success rounded-pill px-3">
+                                                <i class="fa-solid fa-flag-checkered me-1"></i> Yakunlash
+                                            </button>
+                                        </form>
+                                        <form action="{% url 'cancel_order' order.id %}" method="post">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                                Bekor
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% else %}
+                                    <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-secondary rounded-pill">
+                                        <i class="fa-solid fa-eye me-1"></i> Ko'rish
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="fa-solid fa-box-open fa-3x mb-3 d-block opacity-25"></i>
+                                    Hozircha buyurtmalar yo'q.
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Statuslar uchun yumshoq fonlar */
+    .bg-warning-soft { background-color: #fff3cd !important; }
+    .bg-primary-soft { background-color: #cfe2ff !important; }
+    .bg-success-soft { background-color: #d1e7dd !important; }
+    .bg-danger-soft { background-color: #f8d7da !important; }
+    
+    .table thead th {
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .card { transition: all 0.3s ease; }
+</style>
+{% endblock %}

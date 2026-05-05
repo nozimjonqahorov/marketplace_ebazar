@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import SignupForm, LoginForm, ProfileUpdateForm
+from .forms import BuyerSignupForm, SellerSignupForm, LoginForm, ProfileUpdateForm
 from django.views import View
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages 
@@ -8,22 +8,40 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from .models import CustomUser
 
-class SignupView(View):
+class BuyerSignupView(View):
     def get(self, request):
-        form = SignupForm()
-        return render(request, "signup.html", {"form":form})
+        form = BuyerSignupForm()
+        return render(request, "buyer_signup.html", {"form":form})
     
     def post(self, request):
-        form = SignupForm(request.POST)
+        form = BuyerSignupForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
             raw_password = form.cleaned_data.get("password")
             user.set_password(raw_password)
+            user.role = "buyer"
             user.save()
             return redirect("login")
         
-        return render(request, "signup.html", {"form":form})
+        return render(request, "buyer_signup.html", {"form":form})
     
+
+class SellerSignupView(View):
+    def get(self, request):
+        form = SellerSignupForm()
+        return render(request, "seller_signup.html", {"form":form})
+    
+    def post(self, request):
+        form = SellerSignupForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            raw_password = form.cleaned_data.get("password")
+            user.set_password(raw_password)
+            user.role = "seller"
+            user.save()
+            return redirect("login")
+        
+        return render(request, "seller_signup.html", {"form":form})
 
 class LoginView(View):
     def get(self, request):
@@ -56,7 +74,13 @@ def logout_view(request):
 class ProfileView(View):
     def get(self, request, username):
         user = get_object_or_404(CustomUser.objects.prefetch_related("user_products"), username = username)
-        user_products = user.user_products.all()
+        
+        
+        if request.user == user:
+            user_products = user.user_products.all()
+        else:
+            user_products = user.user_products.filter(is_active=True, quantity__gt=0)
+            
         return render(request, "profile.html", {"view_user":user, "user_products":user_products})
         
 
@@ -67,9 +91,10 @@ class ProfileUpdateView(LoginRequiredMixin, View):
     
     def post(self, request):
         form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
+        user = request.user
         if form.is_valid():
             form.save()
-            return redirect("profile")
+            return redirect("profile", user.username)
         return render(request, "profile_update.html", {"form":form})
     
 

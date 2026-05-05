@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-^xn6!94o$#ygvy8q&dk6m_-a3t-g8&-7g84=#tj#rva%!@u6m7
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -38,9 +38,12 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     #my apps
+    'creditcards',
     "main", 
     "products",
     "users",
+    "orders",
+    "wallets",
 
 ]
 
@@ -66,7 +69,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "main.views.categories_for_pages",
+                "config.context_processors.categories_context",
             ],
         },
     },
@@ -127,3 +130,5 @@ MEDIA_URL = "media/"
 MEDIA_ROOT = str(BASE_DIR.joinpath("media"))
 
 AUTH_USER_MODEL = "users.CustomUser"
+
+USE_THOUSAND_SEPARATOR = True

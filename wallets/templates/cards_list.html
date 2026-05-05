@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">Mening hisoblarim</h2>
+        <a href="{% url 'card-create' %}" class="btn btn-primary rounded-pill">
+            <i class="fa-solid fa-plus me-1"></i> Yangi karta qo'shish
+        </a>
+    </div>
+
+    <div class="row g-4">
+        {% for card in cards %}
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 position-relative overflow-hidden" 
+                 style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between mb-4">
+                        <span class="small opacity-75">{{ card.name }}</span>
+                        <i class="fa-solid fa-credit-card fa-xl"></i>
+                    </div>
+                    <h3 class="fw-bold mb-4">{{ card.balance }} so'm</h3>
+                    <div class="d-flex justify-content-between align-items-end">
+                        <p class="mb-0 font-monospace">**** **** **** {{ card.card_number|slice:"-4:" }}</p>
+                        <a href="{% url 'card-detail' card.pk %}" class="btn btn-light btn-sm rounded-pill px-3">Batafsil</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <div class="opacity-25 mb-3">
+                <i class="fa-solid fa-wallet fa-4x"></i>
+            </div>
+            <h5 class="text-muted">Hozircha hisoblar qo'shilmagan</h5>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

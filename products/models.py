@@ -10,18 +10,20 @@ class Category(models.Model):
 
 class Product(models.Model):
 
-    STATUS = [
-        ("sotuvda", "SOTUDA"),
-        ("sotilgan", "SOTILGAN")
+    CHOICES = [
+        ("new", "Yangi"),
+        ("used", "Ishlatilgan"),
+        ("old", "Eski"),
     ]
-    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="sotgan_mahsulotlar")
-    buyer = models.ForeignKey(CustomUser,null=True, blank=True, on_delete=models.SET_NULL, related_name="sotibolgan_mahsulotlar")
+    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="user_products")
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="category_products")
     title = models.CharField(max_length=50)
     description = models.TextField()
     price = models.DecimalField(max_digits=18, decimal_places=2)
+    quantity = models.PositiveIntegerField(default=1) 
     address = models.CharField(max_length=160)
-    status = models.CharField(max_length=20, choices=STATUS)
+    condition = models.CharField(max_length=20, choices=CHOICES, default="new")
+    is_active = models.BooleanField(default=True)
     date = models.DateTimeField(auto_now_add=True)
 
 
@@ -56,10 +58,24 @@ class ProductView(models.Model):
         username = self.user.username if self.user else "Anonim"
         return f"{self.product.title} ko'rildi: {username} - {self.viewed_at}"
     
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'product'], 
+                name='unique_user_product_view',
+                condition=models.Q(user__isnull=False) 
+            ),
+            models.UniqueConstraint(
+                fields=['session_key', 'product'], 
+                name='unique_session_product_view',
+                condition=models.Q(session_key__isnull=False)
+            )
+        ]
+    
 class Comment(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="author_comments")
-    content =models.CharField(340)
+    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    content = models.CharField(max_length=500)
     date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -67,16 +83,3 @@ class Comment(models.Model):
 
 
 
-class Order(models.Model):
-    STATUS_CHOICES = (
-        ('pending', 'Kutilmoqda'),
-        ('completed', 'Muvaffaqiyatli'),
-        ('canceled', 'Bekor qilindi'),
-    )
-
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    seller = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="sotuv_zakazlar")
-    buyer = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="qabul_zakazlar")
-    total_price = models.DecimalField(max_digits=18, decimal_places=2)
-    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='pending')
-    created_at = models.DateTimeField(auto_now_add=True)

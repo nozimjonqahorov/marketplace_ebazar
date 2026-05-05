@@ -7,72 +7,126 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .navbar { background-color: #fff; border-bottom: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .footer { margin-top: 50px; color: #888; font-size: 14px; text-align: center; padding: 30px; background: #fff; border-top: 1px solid #eee; }
-        .nav-link:hover { color: #198754 !important; }
+        body { background-color: #f4f7f6; font-family: 'Inter', sans-serif; }
+        .navbar { background-color: #ffffff; border-bottom: 2px solid #e9ecef; }
+        .nav-link { font-weight: 500; color: #4b5563 !important; transition: 0.3s; }
+        .nav-link:hover { color: #10b981 !important; }
+        .btn-success { background-color: #10b981; border: none; }
+        .footer { margin-top: 60px; padding: 40px; background: #fff; border-top: 1px solid #e5e7eb; color: #6b7280; text-align: center; }
+        .badge-role { font-size: 0.75rem; padding: 4px 8px; border-radius: 12px; margin-left: 5px; }
+        .cursor-pointer { cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+    <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container">
-            <a class="navbar-brand fw-bold text-success" href="{% url 'home' %}">E-Bazar</a>
+            <a class="navbar-brand fw-bold text-success fs-3" href="{% url 'home' %}">
+                <i class="fa-solid fa-bag-shopping me-2"></i>E-Bazar
+            </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <!-- Kategoriyalar Dropdown -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="catDrop" role="button" data-bs-toggle="dropdown">
-                            Kategoriyalar
-                        </a>
-                        <ul class="dropdown-menu">
-                            {% for category in categories %}
-                                <li><a class="dropdown-item" href="{% url 'category' category.name %}">{{ category.name }}</a></li>
-                            {% empty %}
-                                <li><a class="dropdown-item disabled">Kategoriyalar yo'q</a></li>
-                            {% endfor %}
-                        </ul>
-                    </li>
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-center">
                     
-                    <li class="nav-item"><a class="nav-link" href="#"><i class="fa-solid fa-plus-circle me-1"></i>E'lon berish</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#"><i class="fa-solid fa-heart me-1"></i>Saqlanganlar</a></li>
+                    {% if user.is_authenticated %}
+                        {% if user.role == "seller" %}
+                            <!-- SOTUVCHI (SELLER) UCHUN MAXSUS -->
+                            <li class="nav-item">
+                                <a class="nav-link text-primary" href="{% url 'create_product' %}">
+                                    <i class="fa-solid fa-plus-circle me-1"></i>Mahsulot qo'shish
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'seller_dashboard' %}">
+                                     <i class="fa-solid fa-chart-line me-1"></i>Sotuvlar paneli
+                                </a>
+                            </li>
+                            <!-- SOTUVCHI KARTALARI -->
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'cards-list' %}">
+                                     <i class="fa-solid fa-credit-card me-1"></i>Mening hisoblarim
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="catDrop" data-bs-toggle="dropdown">
+                                    Kategoriyalar
+                                </a>
+                                <ul class="dropdown-menu shadow border-0">
+                                    <li><a class="dropdown-item" href="{% url 'all_products' %}">Barcha mahsulotlar</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    {% for category in categories %}
+                                        <li><a class="dropdown-item" href="{% url 'all_products' %}?category={{ category.id }}">{{ category.name }}</a></li>
+                                    {% empty %}
+                                        <li><a class="dropdown-item disabled">Kategoriyalar yo'q</a></li>
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                            <!-- XARIDOR (BUYER) UCHUN MAXSUS -->
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'saved_products' %}">
+                                    <i class="fa-solid fa-heart me-1 text-danger"></i>Saqlanganlar
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'cards-list' %}">
+                                    <i class="fa-solid fa-wallet me-1 text-success"></i>Mening hamyonim
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'my_orders' %}">
+                                     <i class="fa-solid fa-box me-1"></i>Buyurtmalarim
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% endif %}
                 </ul>
 
                 <!-- Qidiruv -->
-                <form class="d-flex me-3" action="#" method="GET">
-                    <input class="form-control me-1" type="search" name="q" placeholder="Qidirish..." aria-label="Search">
-                    <button class="btn btn-outline-success" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+                <form class="d-flex me-lg-3 my-2 my-lg-0" action="{% url 'all_products' %}" method="GET">
+                    <div class="input-group">
+                        <input class="form-control border-end-0 rounded-start-pill" type="search" name="q" placeholder="Mahsulot qidirish..." value="{{ request.GET.q }}">
+                        <button class="btn btn-outline-success border-start-0 rounded-end-pill" type="submit">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </button>
+                    </div>
                 </form>
 
-                <!-- Foydalanuvchi qismi (Login/Logout/Profil) -->
-                <ul class="navbar-nav">
+                <!-- Foydalanuvchi menyusi -->
+                <ul class="navbar-nav align-items-center">
                     {% if user.is_authenticated %}
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="fa-solid fa-circle-user fs-4 me-1 text-secondary"></i>
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" data-bs-toggle="dropdown">
+                                <img src="{{ user.avatar.url }}" width="32" height="32" class="rounded-circle me-2 border" alt="avatar">
                                 <span>{{ user.username }}</span>
+                                <span class="badge {% if user.role == 'seller' %}bg-primary{% else %}bg-info{% endif %} badge-role text-uppercase">
+                                    {{ user.role }}
+                                </span>
                             </a>
-zww                            <li>
-                                <a class="dropdown-item" href="{% url 'profile' user.username %}">
-                                    <i class="fa-solid fa-user me-2"></i>Profilim
-                                </a>
-                            </li>                                <li><a class="dropdown-item" href="{% url 'profile-update' %}"><i class="fa-solid fa-user-gear me-2"></i>Sozlamalar</a></li>
-                                <li><a class="dropdown-item" href="{% url 'change-password' %}"><i class="fa-solid fa-key me-2"></i>Parolni o'zgartirish</a></li>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                                <li><a class="dropdown-item" href="{% url 'profile' user.username %}"><i class="fa-solid fa-user me-2"></i>Profilim</a></li>
+                                <li><a class="dropdown-item" href="{% url 'cards-list' %}"><i class="fa-solid fa-credit-card me-2"></i>To'lov usullari</a></li>
+                                <li><a class="dropdown-item" href="{% url 'profile-update' %}"><i class="fa-solid fa-user-gear me-2"></i>Sozlamalar</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fa-solid fa-right-from-bracket me-2"></i>Chiqish</a></li>
                             </ul>
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">Kirish</a>
+                            <a class="nav-link me-2" href="{% url 'login' %}">Kirish</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="btn btn-success rounded-pill px-4 ms-lg-2" href="{% url 'signup' %}">Ro'yxatdan o'tish</a>
+                        <li class="nav-item dropdown">
+                            <a class="btn btn-success rounded-pill px-4 dropdown-toggle" href="#" id="signupDrop" data-bs-toggle="dropdown">
+                                Ro'yxatdan o'tish
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                                <li><a class="dropdown-item" href="{% url 'buyer_signup' %}">🛒 Xaridor sifatida</a></li>
+                                <li><a class="dropdown-item" href="{% url 'seller_signup' %}">👨‍💼 Sotuvchi sifatida</a></li>
+                            </ul>
                         </li>
                     {% endif %}
                 </ul>
@@ -80,13 +134,13 @@ zww                            <li>
         </div>
     </nav>
 
-    <main class="container my-4">
-        <!-- Message-lar (Xabarlar) uchun joy (Masalan: "Muvaffaqiyatli kirdingiz") -->
+    <!-- Xabarlar (Alerts) -->
+    <main class="container my-4" style="min-height: 70vh;">
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
                     {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             {% endfor %}
         {% endif %}
@@ -95,9 +149,24 @@ zww                            <li>
         {% endblock %}
     </main>
 
-    <div class="footer">
-        <p class="mb-0">&copy; 2026 E-Bazar Jamoasi. Barcha huquqlar himoyalangan.</p>
-    </div>
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 text-md-start mb-3 mb-md-0">
+                    <h5 class="text-success fw-bold">E-Bazar</h5>
+                    <p>O'zbekistondagi eng tezkor va ishonchli marketplace platformasi.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>&copy; 2026 E-Bazar Jamoasi. Barcha huquqlar himoyalangan.</p>
+                    <div class="fs-4">
+                        <i class="fa-brands fa-telegram mx-2 cursor-pointer"></i>
+                        <i class="fa-brands fa-instagram mx-2 cursor-pointer"></i>
+                        <i class="fa-brands fa-facebook mx-2 cursor-pointer"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

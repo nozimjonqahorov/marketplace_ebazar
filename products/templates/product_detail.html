@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.title }} - E-Bazar{% endblock %}
+
+{% block content %}
+<style>
+    :root { --primary-color: #0d6efd; --seller-color: #198754; }
+    .glass-card { background: #fff; border-radius: 20px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+    
+    /* Galereya */
+    .main-img-container { height: 500px; background: #f8f9fa; border-radius: 20px; overflow: hidden; position: relative; border: 1px solid #eee; }
+    .main-image-display { width: 100%; height: 100%; object-fit: contain; transition: 0.5s ease; }
+    .thumb-img { width: 100%; height: 85px; object-fit: cover; border-radius: 12px; cursor: pointer; transition: 0.3s; border: 2px solid transparent; }
+    .thumb-img:hover, .thumb-active { border-color: var(--primary-color); transform: scale(0.95); }
+
+    /* Info Badges */
+    .info-badge { background: #f1f3f5; padding: 10px 15px; border-radius: 12px; display: flex; align-items: center; gap: 10px; }
+    
+    /* User Section */
+    .user-box { background: #f8f9fa; border-radius: 18px; border: 1px solid #e9ecef; }
+    .avatar-circle { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+</style>
+
+<div class="container mt-4 mb-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'all_products' %}" class="text-decoration-none">Katalog</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'all_products' %}?category={{ product.category.id }}" class="text-decoration-none">{{ product.category.title }}</a></li>
+            <li class="breadcrumb-item active">{{ product.title|truncatechars:30 }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- 🖼️ Chap tomon: Galereya -->
+        <div class="col-lg-7">
+            <div class="main-img-container mb-3 shadow-sm">
+                {% if product.productimage_set.exists %}
+                    <img src="{{ product.productimage_set.all.first.image.url }}" class="main-image-display" id="active-img">
+                {% else %}
+                    <div class="h-100 d-flex flex-column align-items-center justify-content-center text-muted">
+                        <i class="fa-regular fa-image fa-5x mb-3 opacity-25"></i>
+                        <p class="fw-bold">Rasm yuklanmagan</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if product.productimage_set.count > 1 %}
+            <div class="row g-2">
+                {% for image in product.productimage_set.all %}
+                <div class="col-2">
+                    <img src="{{ image.image.url }}" class="thumb-img {% if forloop.first %}thumb-active{% endif %}" onclick="changeImage('{{ image.image.url }}', this)">
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 📝 O'ng tomon: Ma'lumotlar -->
+        <div class="col-lg-5">
+            <div class="card glass-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="badge bg-light text-dark border rounded-pill px-3">
+                        <i class="fa-solid fa-tag me-1 text-primary"></i> {{ product.category.title }}
+                    </span>
+                    <span class="text-muted small"><i class="fa-solid fa-eye me-1"></i>{{ product.product_views.count }} ko'rildi</span>
+                </div>
+
+                <h1 class="fw-bold text-dark h2 mb-3">{{ product.title }}</h1>
+                
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <h2 class="text-primary fw-bold mb-0">{{ product.price }} so'm</h2>
+                    <span class="badge {% if product.condition == 'new' %}bg-success{% elif product.condition == 'used' %}bg-warning text-dark{% else %}bg-secondary{% endif %} rounded-pill px-3 py-2">
+                        {{ product.get_condition_display }}
+                    </span>
+                </div>
+
+                <hr class="opacity-10 mb-4">
+
+                <!-- Xususiyatlar jadvali -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6">
+                        <div class="info-badge">
+                            <i class="fa-solid fa-location-dot text-danger"></i>
+                            <div>
+                                <small class="text-muted d-block">Manzil</small>
+                                <strong class="small">{{ product.address }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-badge">
+                            <i class="fa-solid fa-boxes-stacked text-info"></i>
+                            <div>
+                                <small class="text-muted d-block">Miqdori</small>
+                                <strong class="small">{{ product.quantity }} dona</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="info-badge">
+                            <i class="fa-solid fa-clock text-primary"></i>
+                            <div>
+                                <small class="text-muted d-block">E'lon sanasi</small>
+                                <strong class="small">{{ product.date|date:"d-F, Y | H:i" }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sotuvchi ma'lumotlari -->
+                <div class="user-box p-3 mb-4">
+                    <div class="d-flex align-items-center">
+                        <img src="{{ product.author.avatar.url }}" class="avatar-circle me-3">
+                        <div class="flex-grow-1">
+                            <h6 class="fw-bold mb-0">{{ product.author.get_full_name|default:product.author.username }}</h6>
+                            <small class="text-muted">Ro'yxatdan o'tgan: {{ product.author.created_at|date:"Y-yil" }}</small>
+                        </div>
+                        <a href="{% url 'profile' product.author.username %}" class="btn btn-sm btn-outline-dark rounded-pill">Profil</a>
+                    </div>
+                </div>
+
+                <!-- Amallar (Rollarga qarab) -->
+                <div class="d-grid gap-2">
+                    {% if user.is_authenticated and product.author == user %}
+                        <!-- AGAR FOYDALANUVCHI SOTUVCHI BO'LSA (O'ziniki) -->
+                        <div class="alert alert-info py-2 small mb-2 rounded-3 text-center">
+                            <i class="fa-solid fa-circle-user me-1"></i> Bu sizning e'loningiz
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'product_update' product.pk %}" class="btn btn-warning flex-grow-1 fw-bold rounded-3 py-2">
+                                <i class="fa-solid fa-pen-to-square me-1"></i> Tahrirlash
+                            </a>
+                            <form action="{% url 'delete_product' product.pk %}" method="post" class="flex-grow-1">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-danger w-100 fw-bold rounded-3 py-2" onclick="return confirm('E\'lonni o\'chirishga ishonchingiz komilmi?')">
+                                    <i class="fa-solid fa-trash"></i> O'chirish
+                                </button>
+                            </form>
+                        </div>
+                    {% else %}
+                        <!-- AGAR FOYDALANUVCHI XARIDOR BO'LSA -->
+                        <a href="tel:{{ product.author.phone }}" class="btn btn-primary py-3 fw-bold rounded-3 shadow-sm">
+                            <i class="fa-solid fa-phone-volume me-2"></i> {{ product.author.phone|default:"Telefon ko'rsatilmagan" }}
+                        </a>
+                        
+                        {% if product.author.tg_username %}
+                        <a href="https://t.me/{{ product.author.tg_username|cut:'@' }}" target="_blank" class="btn btn-outline-info py-2 fw-bold rounded-3">
+                            <i class="fa-brands fa-telegram me-2"></i> Telegram orqali yozish
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'create_order' product.pk %}" class="btn btn-warning flex-grow-1 fw-bold rounded-3 py-2">
+                            <i class="fa-solid fa-pen-to-square me-1"></i> Buyurtma berish
+                        </a>
+                        <button class="btn btn-light py-2 rounded-3 border save-btn-large" data-id="{{ product.pk }}">
+                            <i class="fa-bookmark fa-regular me-1"></i> Saralanganlarga qo'shish
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📖 Pastki qism: Tavsif va Izohlar -->
+    <div class="row mt-5">
+        <div class="col-lg-8">
+            <div class="card glass-card p-4 mb-4">
+                <h5 class="fw-bold mb-4 border-bottom pb-3">
+                    <i class="fa-solid fa-align-left me-2 text-primary"></i> Mahsulot tavsifi
+                </h5>
+                <div class="product-description" style="line-height: 1.8; color: #444; font-size: 1.1rem;">
+                    {{ product.description|linebreaks }}
+                </div>
+            </div>
+
+            <!-- Izohlar Bo'limi -->
+            <div class="card glass-card p-4">
+                <h5 class="fw-bold mb-4">Fikrlar ({{ comments.count }})</h5>
+                
+                {% if user.is_authenticated %}
+                <form method="post" class="mb-5 bg-light p-4 rounded-4 shadow-sm border">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Mulohazangiz</label>
+                        {{ form.content }}
+                    </div>
+                    <button type="submit" class="btn btn-primary px-5 fw-bold rounded-pill shadow">Yuborish</button>
+                </form>
+                {% else %}
+                <div class="alert alert-warning rounded-4 mb-4">
+                    Izoh qoldirish uchun <a href="{% url 'login' %}" class="fw-bold">tizimga kiring</a>.
+                </div>
+                {% endif %}
+
+                <div class="comment-list">
+                    {% for comment in comments %}
+                    <div class="comment-card p-3 mb-3 border-0 shadow-sm rounded-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <img src="{{ comment.author.avatar.url }}" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
+                            <span class="fw-bold small me-auto text-primary">{{ comment.author.username }}</span>
+                            <small class="text-muted"><i class="fa-regular fa-clock me-1"></i>{{ comment.date|timesince }} avval</small>
+                        </div>
+                        <p class="mb-0 text-dark ps-4 border-start ms-2">{{ comment.content }}</p>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-5 opacity-25">
+                        <i class="fa-solid fa-comment-slash fa-4x mb-3"></i>
+                        <h5>Izohlar mavjud emas</h5>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+         {% if  product.author != user %}
+        <!-- 🚀 O'xshash e'lonlar -->
+            <div class="col-lg-4">
+                <h5 class="fw-bold mb-4 d-flex align-items-center">
+                    <span class="bg-primary p-2 rounded-3 me-2 text-white small">
+                        <i class="fa-solid fa-bolt"></i>
+                    </span>
+                    O'xshash e'lonlar
+                </h5>
+                <div class="row g-3">
+                    {% for same_product in same_category_products %}
+                    <div class="col-12">
+                        <div class="product-card card shadow-sm">
+                            <div class="rec-img-wrapper" style="position: relative; height: 180px;">
+                                <span class="price-badge">{{ same_product.price }} so'm</span>
+                                {% with same_product.productimage_set.first as img %}
+                                    <img src="{{ img.image.url|default:'/static/no-image.png' }}" class="w-100 h-100" style="object-fit: cover;">
+                                {% endwith %}
+                                <a href="{% url 'product_detail' same_product.pk %}" class="stretched-link"></a>
+                            </div>
+                            <div class="card-body p-3">
+                                <h6 class="fw-bold mb-1 text-truncate">{{ same_product.title }}</h6>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted"><i class="fa-solid fa-location-dot me-1"></i>{{ same_product.address|truncatechars:15 }}</small>
+                                    <span class="badge bg-light text-dark small border">{{ same_product.get_condition_display }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+        
+    </div>
+</div>
+
+<script>
+    function changeImage(src, element) {
+        document.getElementById('active-img').src = src;
+        document.querySelectorAll('.thumb-img').forEach(img => img.classList.remove('thumb-active'));
+        element.classList.add('thumb-active');
+    }
+</script>
+{% endblock %}

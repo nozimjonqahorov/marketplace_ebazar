@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}Yangi Mahsulot Yaratish - E-Bazar{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8"> <!-- Formset ko'proq joy egallashi uchun col-md-8 qildim -->
+            <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="fa-solid fa-plus-circle me-2"></i>Yangi Mahsulot Yaratish</h4>
+                </div>
+                
+                <div class="card-body p-4">
+                    {% if form.non_field_errors or formset.non_form_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %} <p>{{ error }}</p> {% endfor %}
+                            {% for error in formset.non_form_errors %} <p>{{ error }}</p> {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <form method="POST" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Mahsulot Asosiy Ma'lumotlari -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold"><i class="fa-solid fa-heading me-1"></i>Mahsulot Nomi</label>
+                                {{ form.title }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold"><i class="fa-solid fa-folder-open me-1"></i>Kategoriya</label>
+                                {{ form.category }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold"><i class="fa-solid fa-tag me-1"></i>Narxi (so'm)</label>
+                                {{ form.price }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold"><i class="fa-solid fa-location-dot me-1"></i>Manzil</label>
+                                {{ form.address }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold"><i class="fa-solid fa-tag me-1"></i>Miqdori</label>
+                                {{ form.quantity }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold"><i class="fa-solid fa-align-left me-1"></i>Tavsif</label>
+                            {{ form.description }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold"><i class="fa-solid fa-circle-check me-1"></i>Holati</label>
+                            {{ form.condition }}
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- FORMSET QISMI (Qo'shimcha rasmlar) -->
+                        <h5 class="mb-3 text-success"><i class="fa-solid fa-images me-2"></i>Qo'shimcha rasmlar</h5>
+                        
+                        {{ formset.management_form }} <!-- BU SHART! -->
+
+                        <div class="row">
+                            {% for image_form in formset %}
+                                <div class="col-md-4 mb-3">
+                                    <div class="p-3 border rounded bg-light">
+                                        <label class="form-label small fw-bold">Rasm {{ forloop.counter }}</label>
+                                        {{ image_form.image }}
+                                        {% if image_form.instance.pk %}
+                                            <div class="form-check mt-2">
+                                                {{ image_form.DELETE }}
+                                                <label class="form-check-label text-danger small">O'chirish</label>
+                                            </div>
+                                        {% endif %}
+                                        {% if image_form.image.errors %}
+                                            <div class="text-danger small">{{ image_form.image.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Tugmalar -->
+                        <div class="d-flex gap-2 justify-content-end mt-4">
+                            <a href="{% url 'all_products' %}" class="btn btn-outline-secondary">
+                                <i class="fa-solid fa-xmark me-1"></i>Bekor qilish
+                            </a>
+                            <button type="submit" class="btn btn-success px-4">
+                                <i class="fa-solid fa-save me-1"></i>Saqlash
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Inputlarni chiroyli qilish */
+    input[type="text"], input[type="number"], select, textarea, input[type="file"] {
+        display: block;
+        width: 100%;
+        border-radius: 6px !important;
+        border: 1px solid #ddd !important;
+        padding: 8px 12px !important;
+        font-size: 14px !important;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+        border-color: #198754 !important;
+        box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25) !important;
+        outline: none;
+    }
+
+    .form-check-input:checked {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+</style>
+{% endblock %}

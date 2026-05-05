@@ -1,5 +1,5 @@
 from django import forms
-from users.models import CustomUser 
+from .models import CustomUser
 from django.core.exceptions import ValidationError
 
 class SignupForm(forms.ModelForm):
@@ -44,6 +44,21 @@ class SignupForm(forms.ModelForm):
         
         return cleaned_data
     
+    def clean_password(self):
+        password = self.cleaned_data.get("password")
+
+        if len(password) < 8:
+            raise ValidationError("Parol juda qisqa! Kamida 8 ta belgi bo'lishi kerak.")
+        
+        if password.isdigit():
+            raise ValidationError("Parol faqat sonlardan iborat bo'lishi mumkin emas.")
+            
+
+        if password.islower():
+            raise ValidationError("Parolda kamida bitta katta harf bo'lsin.")
+
+        return password
+    
 
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=30)
@@ -87,3 +102,14 @@ class ProfileUpdateForm(forms.ModelForm):
         if email and len(email) < 8:
             raise ValidationError("Email kamida 8-ta elementdan iborat bo'lishi kerak")
         return email
+    
+
+
+class BuyerSignupForm(SignupForm):
+    class Meta(SignupForm.Meta):
+        fields = SignupForm.Meta.fields + ['address']
+
+class SellerSignupForm(SignupForm):
+    class Meta(SignupForm.Meta):
+        fields = SignupForm.Meta.fields
+

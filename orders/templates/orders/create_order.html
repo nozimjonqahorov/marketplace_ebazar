@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Xatolar va xabarlar -->
+            {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                        <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+                            <i class="fa-solid fa-{% if message.tags == 'error' %}circle-exclamation{% elif message.tags == 'warning' %}triangle-exclamation{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %} me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="row g-0">
+                    <div class="col-md-5 bg-light d-flex align-items-center justify-content-center border-end" style="min-height: 400px;">
+                        <div class="p-4 text-center w-100">
+                            <h4 class="fw-bold text-dark mb-3">{{ product.title }}</h4>
+                            <p class="text-primary h5 fw-bold mb-4">{{ product.price }} so'm / dona</p>
+                            
+                            <!-- Mahsulot rasmi -->
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.title }}" class="img-fluid rounded shadow-sm" style="max-height: 300px; width: auto; object-fit: contain;">
+                            {% else %}
+                                <div class="bg-secondary-subtle rounded shadow-sm d-flex align-items-center justify-content-center" style="height: 300px; max-height: 300px;">
+                                    <div class="text-center">
+                                        <i class="fa-solid fa-image text-muted" style="font-size: 3rem;"></i>
+                                        <p class="text-muted mt-2">Rasm yo'q</p>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="mt-4 text-muted small">
+                                <p class="mb-1"><strong>Mavjud:</strong> {{ product.quantity }} ta</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <div class="card-body p-4 p-lg-5">
+                            <h3 class="mb-4 fw-bold">Xaridni rasmiylashtirish</h3>
+                            
+                            <form method="post" novalidate>
+                                {% csrf_token %}
+                                
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold text-secondary small">Mahsulot miqdori (Mavjud: {{ product.quantity }})</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-cubes text-muted"></i></span>
+                                        <input type="number" name="quantity" class="form-control border-start-0 ps-0" value="1" min="1" max="{{ product.quantity }}" required>
+                                    </div>
+                                    <small class="text-muted d-block mt-1">Minimum 1 ta, maksimum {{ product.quantity }} ta</small>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold text-secondary small">To'lov kartasini tanlang</label>
+                                    {% if user_cards %}
+                                        {% for card in user_cards %}
+                                        <div class="form-check card-select border rounded-3 p-3 mb-2 transition-all">
+                                            <input class="form-check-input" type="radio" name="card_id" id="card{{ card.id }}" value="{{ card.id }}" {% if forloop.first %}checked{% endif %} required>
+                                            <label class="form-check-label d-flex justify-content-between w-100 ps-2" for="card{{ card.id }}">
+                                                <span><i class="fa-solid fa-credit-card me-2 text-primary"></i> **** {{ card.card_number|slice:"-4:" }}</span>
+                                                <span class="fw-bold">{{ card.balance }} so'm</span>
+                                            </label>
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="alert alert-warning py-3 small">
+                                            <i class="fa-solid fa-circle-exclamation me-2"></i> Kartalar topilmadi. Avval <a href="{% url 'card-create' %}" class="alert-link">karta qo'shing</a>.
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                {% if user_cards %}
+                                <div class="d-grid mt-5">
+                                    <button type="submit" class="btn btn-primary btn-lg rounded-pill shadow">
+                                        To'lovni amalga oshirish
+                                    </button>
+                                </div>
+                                {% endif %}
+                            </form>
+                            
+                            <div class="mt-4 text-center">
+                                <a href="{% url 'product_detail' product.id %}" class="text-decoration-none small text-muted">
+                                    <i class="fa-solid fa-arrow-left me-1"></i> Ortga qaytish
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card-select { 
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .card-select:hover { 
+        background-color: #f8f9fa; 
+        border-color: #0d6efd !important; 
+    }
+    .card-select input[type="radio"]:checked {
+        border-color: #0d6efd !important;
+    }
+    .transition-all { 
+        transition: all 0.2s ease; 
+    }
+</style>
+{% endblock %}  
