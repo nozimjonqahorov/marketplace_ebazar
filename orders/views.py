@@ -203,19 +203,32 @@ class CancelOrderView(LoginRequiredMixin, View):
 
 class MyOrdersView(LoginRequiredMixin, View):
     def get(self, request):
-        orders = Order.objects.filter(buyer=request.user).order_by("-created_at")
+        all_orders = Order.objects.filter(buyer=request.user).order_by("-created_at")
+        orders = all_orders
 
-        total_orders = orders.count()
-        total_products = orders.values("product_id").distinct().count()
+        status_choices = Order._meta.get_field("status").choices
+        valid_statuses = [value for value, _label in status_choices]
+        selected_status = request.GET.get("status", "").strip()
+
+        if selected_status in valid_statuses:
+            orders = orders.filter(status=selected_status)
+        else:
+            selected_status = ""
+
+        total_orders = all_orders.count()
+        total_products = all_orders.values("product_id").distinct().count()
         
        
-        total_expense = orders.filter(status='completed').aggregate(total=Sum('total_price'))['total'] or 0
+        total_expense = all_orders.filter(status='completed').aggregate(total=Sum('total_price'))['total'] or 0
 
         context = {
             "orders": orders,
             "total_orders": total_orders,
             "total_products": total_products,
             "total_expense": int(total_expense),
+            "status_choices": status_choices,
+            "selected_status": selected_status,
+            "filtered_orders_count": orders.count(),
         }
         return render(request, "orders/my_orders.html", context)
 

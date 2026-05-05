@@ -73,6 +73,41 @@ class OrderTotalsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["total_expense"], 1000)
 
+    def test_my_orders_can_be_filtered_by_status(self):
+        Order.objects.create(
+            product=self.product,
+            buyer=self.buyer,
+            seller=self.seller,
+            quantity=1,
+            total_price=Decimal("1000.00"),
+            status="new",
+        )
+        Order.objects.create(
+            product=self.product,
+            buyer=self.buyer,
+            seller=self.seller,
+            quantity=2,
+            total_price=Decimal("2000.00"),
+            status="accepted",
+        )
+        Order.objects.create(
+            product=self.product,
+            buyer=self.buyer,
+            seller=self.seller,
+            quantity=3,
+            total_price=Decimal("3000.00"),
+            status="completed",
+        )
+
+        self.client.force_login(self.buyer)
+        response = self.client.get(reverse("my_orders"), {"status": "accepted"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["selected_status"], "accepted")
+        self.assertEqual(response.context["filtered_orders_count"], 1)
+        self.assertEqual(list(response.context["orders"].values_list("status", flat=True)), ["accepted"])
+        self.assertEqual(response.context["total_orders"], 3)
+
     def test_seller_total_income_completed_only(self):
         # completed should count
         Order.objects.create(

@@ -42,9 +42,32 @@
     <!-- Buyurtmalar Ro'yxati -->
     <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
         <div class="card-header bg-white py-4 px-4 border-bottom">
-            <h4 class="fw-bold mb-0 text-dark">
-                <span class="badge bg-primary me-2">&nbsp;</span> Mening buyurtmalarim
-            </h4>
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                <div>
+                    <h4 class="fw-bold mb-1 text-dark">
+                        <span class="badge bg-primary me-2">&nbsp;</span> Mening buyurtmalarim
+                    </h4>
+                    <div class="small text-muted">
+                        Ko'rsatilmoqda: {{ filtered_orders_count }} ta buyurtma
+                    </div>
+                </div>
+
+                <form method="get" class="d-flex flex-column flex-sm-row gap-2 align-items-sm-center">
+                    <label for="status" class="small fw-semibold text-muted mb-0">Holat bo'yicha filter</label>
+                    <select name="status" id="status" class="form-select">
+                        <option value="">Barcha holatlar</option>
+                        {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-primary">Ko'rsatish</button>
+                    {% if selected_status %}
+                        <a href="{% url 'my_orders' %}" class="btn btn-outline-secondary">Tozalash</a>
+                    {% endif %}
+                </form>
+            </div>
         </div>
         <div class="card-body p-0">
             {% if orders %}
@@ -114,7 +137,7 @@
                             <td colspan="4" class="text-center py-5">
                                 <div class="text-muted">
                                     <i class="fa-solid fa-box-open fa-3x mb-3 d-block opacity-25"></i>
-                                    Hozircha buyurtmalar yo'q.
+                                    Tanlangan holat bo'yicha buyurtma topilmadi.
                                 </div>
                             </td>
                         </tr>
@@ -126,10 +149,17 @@
             <div class="text-center py-5">
                 <div class="text-muted">
                     <i class="fa-solid fa-inbox fa-3x mb-3 d-block opacity-25"></i>
-                    <p>Hozircha buyurtmalar yo'q.</p>
-                    <a href="{% url 'all_products' %}" class="btn btn-sm btn-primary rounded-pill mt-3">
-                        <i class="fa-solid fa-shopping-bag me-1"></i> Xarid qilishni boshlash
-                    </a>
+                    {% if selected_status %}
+                        <p>Tanlangan holat bo'yicha buyurtma topilmadi.</p>
+                        <a href="{% url 'my_orders' %}" class="btn btn-sm btn-outline-secondary rounded-pill mt-3">
+                            <i class="fa-solid fa-rotate-left me-1"></i> Barcha buyurtmalarni ko'rish
+                        </a>
+                    {% else %}
+                        <p>Hozircha buyurtmalar yo'q.</p>
+                        <a href="{% url 'all_products' %}" class="btn btn-sm btn-primary rounded-pill mt-3">
+                            <i class="fa-solid fa-shopping-bag me-1"></i> Xarid qilishni boshlash
+                        </a>
+                    {% endif %}
                 </div>
             </div>
             {% endif %}
